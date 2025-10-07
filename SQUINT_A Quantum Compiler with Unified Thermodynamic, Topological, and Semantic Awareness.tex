@@ -1,0 +1,161 @@
+\documentclass[11pt]{article}
+
+% --- Packages ---
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{cite}
+
+% --- Links ---
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+% --- Macros ---
+\newcommand{\Teff}{T_{\mathrm{eff}}}
+\newcommand{\Qtop}{Q_{\mathrm{top}}}
+\newcommand{\Phif}{\Phi}
+\newcommand{\SQUINT}{\textsc{SQUINT}}
+\newcommand{\qua}{\textsc{QUA}}
+\newcommand{\guppy}{\textsc{Guppy}}
+
+% --- Title ---
+\title{\bf SQUINT: Semantic-Field-Aware Quantum Compilation with Defect Tracking and Floquet Scheduling}
+\author{Dr. Loo}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+We present \SQUINT, a domain-aware quantum compiler that embeds \emph{semantic fields} ($\Phif$), \emph{topological-defect tracking}, and \emph{thermodynamic diagnostics} directly into compilation. Programs express physical intent via overlay directives---coherence length, lattice path length, field-dependent damping, and braid handles---and may specify Floquet parameters (period, duty, phase step) to synthesize periodic control sequences automatically. \SQUINT\ validates constraints, performs multi-domain analysis, and schedules control pulses, emitting QUA-like pulse text together with a machine-readable timeline. A lightweight execution layer simulates field evolution, defect hysteresis, phantom-heat proxies, and Floquet cycles to recover observables such as $\Teff$ and corrected readouts. In v0.1 we implement: (i) overlay-driven wait insertion and path-length enforcement; (ii) Floquet expansion of a single control into cycle trains with per-cycle logging; (iii) JSON timeline emission alongside QUA-like output; and (iv) integrated simulation and visualization. \SQUINT\ offers a reproducible path from physical intent to pulse-level artifacts, bridging semantics, topology, and control.
+\end{abstract}
+
+\vspace{1ex}
+\noindent\textbf{Keywords:} quantum compilation; semantic fields; topological defects; Floquet control; overlays; pulse-level IR; timeline logging.
+
+% =========================================================
+\section{Introduction}
+Gate-level quantum compilers excel at algebraic circuit identities and device mapping, but largely ignore \emph{semantic structure} (field meaning), \emph{topological memory} (defects/braids), and \emph{thermodynamic diagnostics} (heating, effective temperature). Emerging hardware---superconducting arrays with tunable couplers, topological platforms with anyonic defects, and analog, Floquet-driven devices---exposes these phenomena to the programmer.
+
+We address this gap with \SQUINT, a compiler where physical intent appears at the source level via \emph{overlays}. Overlays express constraints (e.g., coherence length $\ge$ \SI{120}{\nano\second}, path length $\le 2$), couplings to a semantic field $\Phif$ (for damping), and optional Floquet schedules. The compiler validates overlays, schedules pulses accordingly, and emits QUA-like text plus a detailed timeline to support downstream control stacks and analysis.
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=1.3em]
+  \item \textbf{Overlay-aware language \& IR.} A minimal syntax that carries coherence/path/damping/braid and Floquet metadata; parsers and IR that preserve this semantics.
+  \item \textbf{Constraint validation \& scheduling.} Automatic wait insertion to satisfy coherence, path-length checks on lattice embeddings, and cycle-train expansion for Floquet drives.
+  \item \textbf{Pulse-level emission \& timeline.} QUA-like text with structured comments for semantic/braid ops and a JSON timeline for reproducibility and tooling.
+  \item \textbf{Execution layer \& observables.} Toy yet deterministic simulation of $\Phif$ and defect density/hysteresis yielding $\Teff$ and phantom-heat proxies, plus a visualizer.
+\end{itemize}
+
+% =========================================================
+\section{Language Design}
+\label{sec:language}
+The language provides a single \texttt{workspace} with qubits, a rectangular lattice, semantic and defect fields, and a \texttt{kernel} over that workspace.
+
+\subsection{Core Syntax}
+\begin{lstlisting}[language=C, basicstyle=\ttfamily\small, frame=single]
+workspace Chip {
+  qubits q[4];
+  lattice L(2,2) attach q;
+  semantic_field Phi : scalar on L;
+  defect_field D     : defects on L { kinetics = "overdamped"; };
+}
+
+kernel CalibratedEPR on Chip {
+  initialize Phi = constant(0.4);
+  nucleate D at {(0,0),(1,1)};
+  evolve   D with rule braid_exchange(rate=0.7, conserve_Qtop=true);
+
+  ctrl rx q[0] angle = π/2 with overlay { coherence_len >= 80ns };
+  ctrl cz q[0], q[1] with overlay {
+    coherence_len >= 120ns, path_len <= 2,
+    floquet_period = 50ns, cycles = 8, duty = 0.4, phase_step = 12deg
+  };
+
+  quench δQ_top = inject(D, amount=0.02);
+  observe T_eff into Te with corrections { defects=D, field=Phi };
+  hysteresis_trace(D, window=3);
+
+  measure q[0] -> m0;
+  measure q[1] -> m1;
+  return { Te, corr = m0 ⊕ m1 };
+}
+\end{lstlisting}
+
+\subsection{Overlays}
+Overlays attach physical intent to controls:
+\begin{itemize}[leftmargin=1.3em]
+  \item \textbf{Coherence:} \verb|coherence_len >= Nns| inserts \verb|wait(N)|.
+  \item \textbf{Path length:} \verb|path_len <= k| checks Manhattan distance under the current lattice.
+  \item \textbf{Damping:} \verb|damping = η(Φ=Phi)| validates the referenced field and couples semantics to control.
+  \item \textbf{Braid handle:} \verb|braid = D| requires a declared defect field.
+  \item \textbf{Floquet:} \verb|floquet_period, cycles, duty, phase_step| expand a single control into a cycle train with per-cycle logging.
+\end{itemize}
+
+% =========================================================
+\section{Compiler Architecture}
+\label{sec:compiler}
+\paragraph{Classification.} Statements are categorized as \emph{quantum} (\texttt{ctrl}, \texttt{measure}), \emph{semantic} (\texttt{initialize}, \texttt{observe}, \texttt{transport}, \texttt{return}), or \emph{braid} (\texttt{nucleate}, \texttt{evolve}, \texttt{quench}, \texttt{hysteresis\_trace}).
+
+\paragraph{Overlay Solver.} For each control, \SQUINT\ validates and normalizes overlay keys. Coherence constraints insert waits; path-length checks compute lattice distances; damping/braid entries validate references. Failures are informative; in \emph{strict} mode, they become hard errors.
+
+\paragraph{Floquet Scheduler.} If present, the scheduler produces per-cycle emissions (gate then OFF window), annotating the timeline as \texttt{gate@floquet} with a \texttt{cycle} index.
+
+\paragraph{Emission.} The QUA-like emitter produces a compact program with \verb|wait(...)| insertions and structured comments for semantic/braid ops. A JSON log captures the timeline and events for tooling and visualization.
+
+% =========================================================
+\section{Execution Semantics}
+\label{sec:exec}
+We provide a small, deterministic simulator to drive examples and visualizations. The semantic field $\Phif$ evolves via a smoothed diffusion/decay step; defects $D$ maintain coordinates, density, and phase; a quench reduces density while preserving handles. A phantom-heat proxy is defined as the $\ell_2$ norm of $\Delta \Phif$ across frames. Observables include $\Teff$ (base + defect + field terms) and measurement corrections.
+
+% =========================================================
+\section{Observables and Thermodynamics}
+\label{sec:observables}
+\paragraph{Effective temperature $\Teff$.} Computed from base field level with additive corrections from defect and field terms.
+\paragraph{Topological charge proxy $\Qtop$.} Derived from declared braid handles and defect evolution events.
+\paragraph{Hysteresis.} The \texttt{hysteresis\_trace} records a short window of defect density; range and drift provide a semantic memory diagnostic.
+\paragraph{Cycle-resolved metrics.} When Floquet is active, traces are indexed by cycle for alignment with on/off windows.
+
+% =========================================================
+\section{Visualization and Tooling}
+\label{sec:viz}
+The \emph{Floquet Visualizer} animates $\Phif$ on the lattice with defect overlays and plots $\Teff$, phantom heat, and hysteresis. Inputs are the emitted \verb|*.log.json| and \verb|*.sim.json|. The web playgrounds provide an interactive front-end to generate overlay blocks and preview cycle trains.
+
+% =========================================================
+\section{Evaluation (v0.1)}
+\label{sec:evaluation}
+\paragraph{Benchmarks.} We include three examples (\texttt{basic}, \texttt{floquet}, \texttt{semantic}). For each, \SQUINT\ compiles to QUA-like text, writes a timeline, and (optionally) produces simulation traces.
+\paragraph{Reproducibility.} Each compile produces human-readable text and machine logs; the visualizer consumes the same logs to regenerate figures.
+\paragraph{Ablations.} Removing overlays yields minimal schedules; enabling overlays triggers wait insertion, path validation, and Floquet cycle trains.
+
+% =========================================================
+\section{Limitations and Outlook}
+\label{sec:limits}
+The simulator is illustrative, not a physical model. Guarded execution (e.g., \texttt{unless} clauses) is preserved as comments but not yet lowered. Future work includes budgeted coherence, routing-cost hints, native back-ends (e.g., OPX), and block-level \texttt{floquet\{...\}} syntax.
+
+% =========================================================
+\section{Related Work}
+\label{sec:related}
+Pulse-level languages (e.g., \qua) and control compilers focus on waveform scheduling but do not encode semantic fields or defect dynamics. Domain-specific IRs and schedulers exist for hardware constraints; \SQUINT\ complements them by elevating semantics/topology to first-class compile-time entities.
+
+% =========================================================
+\section{Conclusion}
+We introduced \SQUINT, a triple-aware compiler that makes semantics, topology, and thermodynamics explicit in source, validated at compile time, and reflected in pulse-level artifacts. The v0.1 toolchain demonstrates feasibility and offers a reproducible path from physical intent to scheduled controls.
+
+\paragraph{Availability.} Source, examples, and docs: \url{https://github.com/Dr-Loo/SQUINT}.
+
+\bibliographystyle{ieeetr}
+\bibliography{refs}
+\end{document}
