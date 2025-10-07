@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+dist/ build/ *.egg-info/
+*.log.json *.sim.json *.sim.txt
+*.qua.txt
