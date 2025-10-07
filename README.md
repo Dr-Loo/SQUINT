@@ -2,8 +2,9 @@
 
 > **S**emantic **Q**uantum **INT**erpreter: A compiler that understands thermodynamics, topology, and semantic structure
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+![MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Status](https://img.shields.io/badge/status-v0.1.0-brightgreen)
 
 SQUINT represents a paradigm shift from traditional quantum compilation to **physical domain compilation**, enabling programmers to express algorithms in the natural language of their physical implementation while automatically handling cross-domain constraints.
 
