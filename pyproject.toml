@@ -1,3 +1,30 @@
+[project]
+name = "squint-compiler"
+version = "0.1.0"
+description = "Semantic Quantum INTerpreter: triple-aware compiler"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Dr-Loo" }]
+requires-python = ">=3.10"
+dependencies = []  # core has no hard deps
+
+# Optional installs:
+[project.optional-dependencies]
+visualizer = ["numpy>=1.26", "matplotlib>=3.8"]
+dev = ["pytest>=7.0", "ruff>=0.4", "mypy>=1.8", "build>=1.2", "twine>=5.0"]
+
+[project.scripts]
+squint = "squint.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["squint"]
+
+[tool.setuptools.package-data]
+squint = ["examples/*.squint"]
 squint/
   __init__.py        # exposes __version__
   cli.py             # holds main()
