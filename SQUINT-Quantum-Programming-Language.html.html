@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQUINT Quantum Programming Language</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .gradient-bg { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .quantum-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        .code-editor { 
+            background: #1e1e1e; 
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .syntax-highlight { 
+            color: #e2e8f0; 
+            background: transparent;
+        }
+        .quantum-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .circuit-line {
+            stroke: #64748b;
+            stroke-width: 2;
+        }
+        .gate-node {
+            fill: #3b82f6;
+            stroke: #1e40af;
+            stroke-width: 2;
+        }
+        .overlay-badge {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Quantum Particles Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="quantum-particle" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+        <div class="quantum-particle" style="top: 60%; left: 80%; animation-delay: 1s;"></div>
+        <div class="quantum-particle" style="top: 40%; left: 30%; animation-delay: 2s;"></div>
+        <div class="quantum-particle" style="top: 80%; left: 60%; animation-delay: 0.5s;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 pt-8 pb-6">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    SQUINT
+                </h1>
+                <p class="text-xl text-slate-300 mb-2">Quantum Programming Language</p>
+                <p class="text-lg text-slate-400">Semantic Field-Aware Quantum Operations with Overlay Constraints</p>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <span class="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm border border-blue-500/30">v0.1</span>
+                    <span class="px-3 py-1 bg-green-600/20 text-green-300 rounded-full text-sm border border-green-500/30">Floquet Ready</span>
+                    <span class="px-3 py-1 bg-purple-600/20 text-purple-300 rounded-full text-sm border border-purple-500/30">Overlay Strict</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-6 pb-12">
+        <!-- Academic Foundation -->
+        <section class="mb-12">
+            <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                <h2 class="text-2xl font-bold mb-4 text-center">Theoretical Foundation</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-blue-400">Research Paper</h3>
+                        <p class="text-slate-300 mb-4">
+                            SQUINT is built on peer-reviewed research in quantum semantics and field-aware operations. 
+                            The theoretical framework enables unprecedented control over quantum systems through 
+                            semantic field mapping and constraint-based compilation.
+                        </p>
+                        <a href="#" class="inline-flex items-center px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:bg-blue-600/30 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            Read the Research Paper (PDF)
+                        </a>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-3 text-green-400">Key Innovations</h3>
+                        <ul class="text-slate-300 space-y-2 text-sm">
+                            <li class="flex items-start">
+                                <span class="text-green-400 mr-2">•</span>
+                                Semantic field mapping for quantum state representation
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-400 mr-2">•</span>
+                                Overlay constraint validation at compile-time
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-400 mr-2">•</span>
+                                Floquet engineering with automated sequence generation
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-400 mr-2">•</span>
+                                Defect field handling for topological quantum computing
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Overview -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Core Capabilities</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Semantic Fields</h3>
+                    <p class="text-slate-300">Define quantum operations with semantic field awareness including Φ (Phi) constants and field interactions</p>
+                </div>
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Overlay Constraints</h3>
+                    <p class="text-slate-300">Enforce physical constraints like coherence length, path length, damping, and Floquet parameters</p>
+                </div>
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Floquet Engineering</h3>
+                    <p class="text-slate-300">Generate periodic drive sequences with customizable period, duty cycle, and phase stepping</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Web Tools & Demos -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Interactive Web Tools</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30 hover:border-blue-500/50 transition-all">
+                    <h3 class="text-xl font-semibold mb-3 text-blue-400">SQUINT Playground</h3>
+                    <p class="text-slate-300 mb-4">Experiment with semantic fields, overlay constraints, and real-time quantum circuit visualization.</p>
+                    <a href="SQUINT Quantum Programming Language.html" class="inline-flex items-center text-blue-400 hover:text-blue-300">
+                        Launch Playground →
+                    </a>
+                </div>
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30 hover:border-purple-500/50 transition-all">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-400">Floquet Engineering Lab</h3>
+                    <p class="text-slate-300 mb-4">Design and simulate periodic drive sequences with customizable parameters and waveform analysis.</p>
+                    <a href="SQUINT Floquet Engineering Demo.html" class="inline-flex items-center text-purple-400 hover:text-purple-300">
+                        Open Floquet Lab →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Code Editor -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Interactive SQUINT Editor</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Code Editor -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold">SQUINT Program</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="loadExample('basic')" class="px-3 py-1 bg-blue-600/20 text-blue-300 rounded text-sm hover:bg-blue-600/30 transition-colors">Basic</button>
+                            <button onclick="loadExample('floquet')" class="px-3 py-1 bg-purple-600/20 text-purple-300 rounded text-sm hover:bg-purple-600/30 transition-colors">Floquet</button>
+                            <button onclick="loadExample('semantic')" class="px-3 py-1 bg-green-600/20 text-green-300 rounded text-sm hover:bg-green-600/30 transition-colors">Semantic</button>
+                            <a href="SQUINT Floquet Engineering Demo.html" class="px-3 py-1 bg-orange-600/20 text-orange-300 rounded text-sm hover:bg-orange-600/30 transition-colors">Floquet Demo</a>
+                        </div>
+                    </div>
+                    <div class="code-editor">
+                        <div class="bg-slate-700 px-4 py-2 text-sm text-slate-300 border-b border-slate-600">
+                            <span class="mono">example.squint</span>
+                        </div>
+                        <textarea id="squintCode" class="w-full h-96 p-4 bg-transparent text-slate-200 mono text-sm resize-none focus:outline-none" 
+                                  placeholder="Enter your SQUINT code here..." spellcheck="false"></textarea>
+                    </div>
+                    <button onclick="analyzeCode()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all quantum-glow">
+                        Analyze & Compile
+                    </button>
+                </div>
+
+                <!-- Analysis Output -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold">Analysis Results</h3>
+                    <div id="analysisOutput" class="bg-slate-800/50 rounded-lg p-4 min-h-96 border border-slate-600/30">
+                        <div class="text-slate-400 text-center py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            <p>Enter SQUINT code and click "Analyze & Compile" to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quantum Circuit Visualization -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Quantum Circuit Visualization</h2>
+            <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                <div id="circuitView" class="min-h-64 flex items-center justify-center">
+                    <div class="text-slate-400 text-center">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p>Quantum circuit will appear here after analysis</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Language Features -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Language Features</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Syntax Examples -->
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-4">Syntax Examples</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-blue-400 mb-2">Workspace Definition</h4>
+                            <pre class="mono text-sm bg-slate-900/50 p-3 rounded overflow-x-auto"><code>workspace CalibratedEPR {
+    qubits q[4];
+    lattice L(2,2) attach q;
+    semantic_field Phi: scalar on q;
+    defect_field D: defects on q { ... };
+}</code></pre>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-green-400 mb-2">Quantum Operations</h4>
+                            <pre class="mono text-sm bg-slate-900/50 p-3 rounded overflow-x-auto"><code>ctrl rx q[0] angle=π/4
+    with overlay {
+        coherence_len >= 50ns,
+        path_len <= 2,
+        damping η(Φ=Phi),
+        floquet_period 100ns,
+        cycles 10, duty 0.3
+    };</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overlay Types -->
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-4">Overlay Types</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                            <div>
+                                <h4 class="font-medium">coherence_len</h4>
+                                <p class="text-sm text-slate-300">Minimum coherence time requirement (e.g., >=50ns)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                            <div>
+                                <h4 class="font-medium">path_len</h4>
+                                <p class="text-sm text-slate-300">Maximum Manhattan distance for 2-qubit gates (e.g., <=2)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
+                            <div>
+                                <h4 class="font-medium">damping</h4>
+                                <p class="text-sm text-slate-300">Semantic field damping: η(Φ=Phi)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-red-400 rounded-full mt-2"></div>
+                            <div>
+                                <h4 class="font-medium">braid</h4>
+                                <p class="text-sm text-slate-300">Defect field handle for anyon braiding operations</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2"></div>
+                            <div>
+                                <h4 class="font-medium">Floquet Parameters</h4>
+                                <p class="text-sm text-slate-300">floquet_period, cycles, duty, phase_step</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compilation Pipeline -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Compilation Pipeline</h2>
+            <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold mb-2">Parse</h3>
+                        <p class="text-sm text-slate-300">Lexical analysis and syntax parsing into IR</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold mb-2">Validate</h3>
+                        <p class="text-sm text-slate-300">Overlay constraint checking and semantic validation</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold mb-2">Expand</h3>
+                        <p class="text-sm text-slate-300">Floquet sequence generation and timeline construction</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold mb-2">Emit</h3>
+                        <p class="text-sm text-slate-300">QUA-like code generation with timeline logging</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-400">
+            <p>SQUINT Quantum Programming Language - Semantic Field-Aware Quantum Operations</p>
+            <p class="text-sm mt-2">Version 0.1 with Floquet expansion, overlay constraints, and timeline logging</p>
+        </footer>
+    </main>
+
+    <script>
+        // Example SQUINT programs
+        const examples = {
+            basic: `workspace CalibratedEPR {
+    qubits q[4];
+    lattice L(2,2) attach q;
+    semantic_field Phi: scalar on q;
+    defect_field D: defects on q { (0,0), (1,1) };
+}
+
+kernel main on CalibratedEPR {
+    // Initialize semantic field
+    initialize Phi = constant(3.14159);
+    
+    // Basic quantum operations with overlays
+    ctrl rx q[0] angle=π/4 with overlay {
+        coherence_len >= 50ns,
+        path_len <= 2
+    };
+    
+    ctrl cx q[0], q[1] with overlay {
+        coherence_len >= 100ns,
+        damping η(Φ=Phi)
+    };
+    
+    measure q[0] -> m0;
+    measure q[1] -> m1;
+    
+    return {m0, m1};
+}`,
+            
+            floquet: `workspace FloquetDemo {
+    qubits q[2];
+    lattice L(2,1) attach q;
+    semantic_field Phi: scalar on q;
+}
+
+kernel floquet_sequence on FloquetDemo {
+    initialize Phi = constant(2.0);
+    
+    // Floquet-engineered RX gate
+    ctrl rx q[0] angle=π/2 with overlay {
+        floquet_period 100ns,
+        cycles 20,
+        duty 0.3,
+        phase_step 15deg,
+        coherence_len >= 200ns
+    };
+    
+    // Standard gate for comparison
+    ctrl x q[1];
+    
+    measure q[0] -> m0;
+    measure q[1] -> m1;
+    
+    return {m0, m1, Phi};
+}`,
+            
+            semantic: `workspace SemanticField {
+    qubits q[3];
+    lattice L(3,1) attach q;
+    semantic_field Phi: scalar on q;
+    semantic_field Psi: vector on q;
+    defect_field D: defects on q;
+}
+
+kernel semantic_ops on SemanticField {
+    // Initialize fields
+    initialize Phi = constant(1.5708);
+    initialize Psi = vector(0.1, 0.2, 0.3);
+    
+    // Nucleate defects
+    nucleate D at (0,0), (1,0), (2,0);
+    
+    // Evolve defect field
+    evolve D;
+    
+    // Quantum operations with semantic awareness
+    ctrl h q[0] with overlay {
+        damping η(Φ=Phi),
+        coherence_len >= 75ns
+    };
+    
+    ctrl cz q[0], q[2] with overlay {
+        path_len <= 3,
+        braid D,
+        coherence_len >= 150ns
+    };
+    
+    // Observe semantic field effects
+    observe Phi into obs_Phi with corrections {gain=1.2, offset=0.1};
+    
+    // Hysteresis analysis
+    hysteresis_trace(D, window=5);
+    
+    measure q[0] -> m0;
+    measure q[2] -> m2;
+    
+    return {obs_Phi, m0, m2};
+}`
+        };
+
+        // Load example into editor
+        function loadExample(type) {
+            const editor = document.getElementById('squintCode');
+            editor.value = examples[type];
+            editor.focus();
+        }
+
+        // Analyze SQUINT code
+        function analyzeCode() {
+            const code = document.getElementById('squintCode').value;
+            const output = document.getElementById('analysisOutput');
+            
+            if (!code.trim()) {
+                output.innerHTML = '<div class="text-red-400">Please enter some SQUINT code to analyze</div>';
+                return;
+            }
+
+            // Simulate analysis (in a real implementation, this would call the Python backend)
+            const analysis = simulateAnalysis(code);
+            
+            output.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-green-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="font-semibold">Parse Successful</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-slate-400">Workspace:</span>
+                            <span class="text-blue-300 ml-2">${analysis.workspace}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Qubits:</span>
+                            <span class="text-blue-300 ml-2">${analysis.qubits}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Lattice:</span>
+                            <span class="text-blue-300 ml-2">${analysis.lattice}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Operations:</span>
+                            <span class="text-blue-300 ml-2">${analysis.operations}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-slate-300 mb-2">Semantic Fields</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${analysis.semanticFields.map(field => 
+                                `<span class="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs">${field}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-slate-300 mb-2">Defect Fields</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${analysis.defectFields.map(field => 
+                                `<span class="px-2 py-1 bg-red-600/20 text-red-300 rounded text-xs">${field}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-slate-300 mb-2">Overlay Constraints Found</h4>
+                        <div class="space-y-1">
+                            ${analysis.overlays.map(overlay => 
+                                `<div class="text-xs mono text-slate-300">${overlay}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-slate-300 mb-2">Compilation Output</h4>
+                        <pre class="mono text-xs bg-slate-900/50 p-3 rounded overflow-x-auto text-slate-300">${analysis.quaOutput}</pre>
+                    </div>
+                </div>
+            `;
+
+            // Update circuit visualization
+            updateCircuitVisualization(analysis.operationsList);
+        }
+
+        // Simulate SQUINT analysis
+        function simulateAnalysis(code) {
+            // Simple parser simulation - in reality this would use the actual SQUINT parser
+            const lines = code.split('\n');
+            let workspace = 'Unknown';
+            let qubits = 0;
+            let lattice = '0x0';
+            let semanticFields = [];
+            let defectFields = [];
+            let operations = 0;
+            let overlays = [];
+            let operationsList = [];
+
+            lines.forEach(line => {
+                line = line.trim();
+                
+                if (line.startsWith('workspace')) {
+                    workspace = line.split(/{/)[0].replace('workspace', '').trim();
+                } else if (line.includes('qubits') && line.includes('[')) {
+                    const match = line.match(/\[(\d+)\]/);
+                    if (match) qubits = parseInt(match[1]);
+                } else if (line.includes('lattice') && line.includes('(')) {
+                    const match = line.match(/\((\d+),(\d+)\)/);
+                    if (match) lattice = `${match[1]}x${match[2]}`;
+                } else if (line.includes('semantic_field')) {
+                    const match = line.match(/semantic_field\s+(\w+)/);
+                    if (match) semanticFields.push(match[1]);
+                } else if (line.includes('defect_field')) {
+                    const match = line.match(/defect_field\s+(\w+)/);
+                    if (match) defectFields.push(match[1]);
+                } else if (line.startsWith('ctrl ') || line.startsWith('measure ') || line.startsWith('initialize ')) {
+                    operations++;
+                    operationsList.push(line);
+                } else if (line.includes('with overlay')) {
+                    overlays.push(line.trim());
+                }
+            });
+
+            // Generate QUA-like output
+            const quaOutput = `program = QUAProgram()
+with program:
+    # Workspace: ${workspace}
+    # Qubits: ${qubits}, Lattice: ${lattice}
+    
+${operationsList.map((op, i) => `    # ${op}`).join('\n')}
+    
+end_program()`;
+
+            return {
+                workspace,
+                qubits,
+                lattice,
+                semanticFields,
+                defectFields,
+                operations,
+                overlays,
+                operationsList,
+                quaOutput
+            };
+        }
+
+        // Update circuit visualization
+        function updateCircuitVisualization(operations) {
+            const circuitView = document.getElementById('circuitView');
+            
+            if (operations.length === 0) {
+                circuitView.innerHTML = `
+                    <div class="text-slate-400 text-center">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p>No quantum operations to visualize</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Create simple circuit visualization
+            const qubits = new Set();
+            operations.forEach(op => {
+                if (op.includes('q[')) {
+                    const matches = op.match(/q\[(\d+)\]/g);
+                    if (matches) {
+                        matches.forEach(match => {
+                            const qubitNum = parseInt(match.match(/\d+/)[0]);
+                            qubits.add(qubitNum);
+                        });
+                    }
+                }
+            });
+
+            const qubitArray = Array.from(qubits).sort((a, b) => a - b);
+            const circuitHTML = `
+                <div class="w-full">
+                    <h4 class="text-lg font-semibold mb-4 text-center">Quantum Circuit</h4>
+                    <div class="space-y-4">
+                        ${qubitArray.map(qubit => `
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 text-right text-sm text-slate-300">q[${qubit}]</div>
+                                <div class="flex-1 h-px bg-slate-600 relative">
+                                    ${operations.map((op, index) => {
+                                        if (op.includes(`q[${qubit}]`)) {
+                                            let gateType = '?';
+                                            let color = 'bg-gray-500';
+                                            
+                                            if (op.includes('ctrl rx')) { gateType = 'Rx'; color = 'bg-blue-500'; }
+                                            else if (op.includes('ctrl x')) { gateType = 'X'; color = 'bg-red-500'; }
+                                            else if (op.includes('ctrl h')) { gateType = 'H'; color = 'bg-purple-500'; }
+                                            else if (op.includes('ctrl cz')) { gateType = 'CZ'; color = 'bg-green-500'; }
+                                            else if (op.includes('measure')) { gateType = 'M'; color = 'bg-orange-500'; }
+                                            
+                                            return `<div class="absolute top-1/2 transform -translate-y-1/2 w-8 h-8 ${color} rounded flex items-center justify-center text-xs font-bold" style="left: ${index * 60}px;">${gateType}</div>`;
+                                        }
+                                        return '';
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="mt-6 text-center">
+                        <div class="flex justify-center space-x-6 text-xs text-slate-400">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                                <span>Rotation</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-red-500 rounded"></div>
+                                <span>Pauli-X</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-purple-500 rounded"></div>
+                                <span>Hadamard</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-green-500 rounded"></div>
+                                <span>Controlled-Z</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 bg-orange-500 rounded"></div>
+                                <span>Measure</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            circuitView.innerHTML = circuitHTML;
+        }
+
+        // Initialize with basic example
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExample('basic');
+        });
+    </script>
+</body>
+</html>

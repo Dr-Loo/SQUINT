@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQUINT Floquet Engineering Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.0.3/plotly.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .gradient-bg { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .quantum-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        .wave-animation {
+            animation: wave 2s ease-in-out infinite;
+        }
+        @keyframes wave {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Header -->
+    <header class="pt-8 pb-6">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    SQUINT Floquet Engineering
+                </h1>
+                <p class="text-xl text-slate-300 mb-2">Interactive Periodic Drive Simulation</p>
+                <p class="text-lg text-slate-400">Explore Floquet sequences with customizable parameters</p>
+                <div class="mt-4">
+                    <a href="SQUINT Quantum Programming Language.html" class="inline-flex items-center px-4 py-2 bg-blue-600/20 text-blue-300 rounded-lg border border-blue-500/30 hover:bg-blue-600/30 transition-colors">
+                        ← Back to SQUINT Main
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-12">
+        <!-- Floquet Controls -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Floquet Parameter Controls</h2>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Parameter Input -->
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-6 text-blue-400">Drive Parameters</h3>
+                    <div class="space-y-6">
+                        <!-- Period -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                Period (ns): <span id="periodValue">100</span>
+                            </label>
+                            <input type="range" id="periodSlider" min="10" max="500" value="100" 
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>10ns</span>
+                                <span>500ns</span>
+                            </div>
+                        </div>
+
+                        <!-- Duty Cycle -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                Duty Cycle: <span id="dutyValue">0.3</span>
+                            </label>
+                            <input type="range" id="dutySlider" min="0.1" max="1.0" step="0.1" value="0.3" 
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>0.1</span>
+                                <span>1.0</span>
+                            </div>
+                        </div>
+
+                        <!-- Cycles -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                Number of Cycles: <span id="cyclesValue">10</span>
+                            </label>
+                            <input type="range" id="cyclesSlider" min="1" max="50" value="10" 
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>1</span>
+                                <span>50</span>
+                            </div>
+                        </div>
+
+                        <!-- Phase Step -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                Phase Step (degrees): <span id="phaseValue">15</span>
+                            </label>
+                            <input type="range" id="phaseSlider" min="0" max="90" value="15" 
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>0°</span>
+                                <span>90°</span>
+                            </div>
+                        </div>
+
+                        <!-- Gate Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-2">Gate Type</label>
+                            <select id="gateSelect" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white">
+                                <option value="rx">RX (Rotation X)</option>
+                                <option value="ry">RY (Rotation Y)</option>
+                                <option value="rz">RZ (Rotation Z)</option>
+                                <option value="x">X (Pauli-X)</option>
+                                <option value="h">H (Hadamard)</option>
+                            </select>
+                        </div>
+
+                        <!-- Angle (for rotation gates) -->
+                        <div id="angleControl">
+                            <label class="block text-sm font-medium text-slate-300 mb-2">
+                                Rotation Angle (π): <span id="angleValue">0.5</span>
+                            </label>
+                            <input type="range" id="angleSlider" min="0" max="2" step="0.25" value="0.5" 
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs text-slate-400 mt-1">
+                                <span>0</span>
+                                <span>2π</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex space-x-4 pt-4">
+                            <button onclick="generateFloquetSequence()" 
+                                    class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all quantum-glow">
+                                Generate Floquet Sequence
+                            </button>
+                            <button onclick="runFloquetSimulation()" 
+                                    class="px-6 py-3 bg-green-600/20 text-green-300 border border-green-600/30 rounded-lg hover:bg-green-600/30 transition-all">
+                                Run Simulation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Preview -->
+                <div class="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-6 text-green-400">Live Preview</h3>
+                    <div class="space-y-4">
+                        <!-- Current Parameters -->
+                        <div class="bg-slate-900/50 rounded-lg p-4">
+                            <h4 class="font-semibold text-slate-300 mb-2">Current Configuration</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>Period: <span id="previewPeriod" class="text-blue-300">100ns</span></div>
+                                <div>Duty: <span id="previewDuty" class="text-blue-300">30%</span></div>
+                                <div>Cycles: <span id="previewCycles" class="text-blue-300">10</span></div>
+                                <div>Phase Step: <span id="previewPhase" class="text-blue-300">15°</span></div>
+                                <div>Gate: <span id="previewGate" class="text-blue-300">RX</span></div>
+                                <div>Angle: <span id="previewAngle" class="text-blue-300">0.5π</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Sequence Preview -->
+                        <div class="bg-slate-900/50 rounded-lg p-4">
+                            <h4 class="font-semibold text-slate-300 mb-2">Generated Sequence</h4>
+                            <div id="sequencePreview" class="text-sm text-slate-400">
+                                Configure parameters and generate sequence
+                            </div>
+                        </div>
+
+                        <!-- Timing Info -->
+                        <div class="bg-slate-900/50 rounded-lg p-4">
+                            <h4 class="font-semibold text-slate-300 mb-2">Timing Analysis</h4>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>Total Duration: <span id="totalDuration" class="text-green-300">-</span></div>
+                                <div>Active Time: <span id="activeTime" class="text-green-300">-</span></div>
+                                <div>Idle Time: <span id="idleTime" class="text-green-300">-</span></div>
+                                <div>Frequency: <span id="frequency" class="text-green-300">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visualization -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Floquet Waveform Visualization</h2>
+            <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                <div id="waveformPlot" class="h-96">
+                    <div class="flex items-center justify-center h-full text-slate-400">
+                        <div class="text-center">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <p>Generate Floquet sequence to visualize waveform</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Simulation Results</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- QUA Output -->
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-4 text-blue-400">Generated QUA Code</h3>
+                    <div id="quaOutput" class="bg-slate-900/50 rounded-lg p-4">
+                        <pre class="mono text-sm text-slate-300">// QUA code will appear here after simulation</pre>
+                    </div>
+                </div>
+
+                <!-- Analysis Results -->
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <h3 class="text-xl font-semibold mb-4 text-green-400">Analysis Results</h3>
+                    <div id="analysisOutput" class="space-y-3">
+                        <div class="text-slate-400">Run simulation to see analysis results</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Content -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Understanding Floquet Engineering</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-blue-400 text-2xl wave-animation">∿</span>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Periodic Driving</h3>
+                    <p class="text-slate-300 text-sm">Apply periodic control fields to engineer effective Hamiltonians and create new quantum phenomena.</p>
+                </div>
+                
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Effective Hamiltonians</h3>
+                    <p class="text-slate-300 text-sm">High-frequency driving creates time-averaged effective Hamiltonians with engineered properties.</p>
+                </div>
+                
+                <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-600/30">
+                    <div class="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Quantum Control</h3>
+                    <p class="text-slate-300 text-sm">Precise control over quantum states through carefully designed periodic sequences.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Parameter controls
+        const controls = {
+            period: document.getElementById('periodSlider'),
+            duty: document.getElementById('dutySlider'),
+            cycles: document.getElementById('cyclesSlider'),
+            phase: document.getElementById('phaseSlider'),
+            gate: document.getElementById('gateSelect'),
+            angle: document.getElementById('angleSlider')
+        };
+
+        const values = {
+            period: document.getElementById('periodValue'),
+            duty: document.getElementById('dutyValue'),
+            cycles: document.getElementById('cyclesValue'),
+            phase: document.getElementById('phaseValue'),
+            angle: document.getElementById('angleValue')
+        };
+
+        const previews = {
+            period: document.getElementById('previewPeriod'),
+            duty: document.getElementById('previewDuty'),
+            cycles: document.getElementById('previewCycles'),
+            phase: document.getElementById('previewPhase'),
+            gate: document.getElementById('previewGate'),
+            angle: document.getElementById('previewAngle')
+        };
+
+        // Update sliders and preview
+        Object.keys(controls).forEach(key => {
+            controls[key].addEventListener('input', () => {
+                const value = controls[key].value;
+                
+                if (key === 'gate') {
+                    previews[key].textContent = value.toUpperCase();
+                    // Show/hide angle control for rotation gates
+                    const angleControl = document.getElementById('angleControl');
+                    if (value.startsWith('r')) {
+                        angleControl.style.display = 'block';
+                    } else {
+                        angleControl.style.display = 'none';
+                    }
+                } else if (key === 'duty') {
+                    values[key].textContent = value;
+                    previews[key].textContent = Math.round(value * 100) + '%';
+                } else if (key === 'phase') {
+                    values[key].textContent = value;
+                    previews[key].textContent = value + '°';
+                } else if (key === 'angle') {
+                    values[key].textContent = value;
+                    previews[key].textContent = value + 'π';
+                } else {
+                    values[key].textContent = value;
+                    previews[key].textContent = key === 'period' ? value + 'ns' : value;
+                }
+                
+                updateTimingAnalysis();
+            });
+        });
+
+        // Update timing analysis
+        function updateTimingAnalysis() {
+            const period = parseInt(controls.period.value);
+            const duty = parseFloat(controls.duty.value);
+            const cycles = parseInt(controls.cycles.value);
+            
+            const totalDuration = period * cycles;
+            const activeTime = totalDuration * duty;
+            const idleTime = totalDuration - activeTime;
+            const frequency = 1 / period; // GHz
+            
+            document.getElementById('totalDuration').textContent = totalDuration + 'ns';
+            document.getElementById('activeTime').textContent = activeTime.toFixed(1) + 'ns';
+            document.getElementById('idleTime').textContent = idleTime.toFixed(1) + 'ns';
+            document.getElementById('frequency').textContent = frequency.toFixed(2) + ' GHz';
+        }
+
+        // Generate Floquet sequence
+        function generateFloquetSequence() {
+            const period = parseInt(controls.period.value);
+            const duty = parseFloat(controls.duty.value);
+            const cycles = parseInt(controls.cycles.value);
+            const phaseStep = parseInt(controls.phase.value);
+            const gate = controls.gate.value;
+            const angle = parseFloat(controls.angle.value);
+            
+            const onTime = period * duty;
+            const offTime = period - onTime;
+            
+            let sequence = [];
+            let quaCode = [];
+            
+            quaCode.push(`# Floquet ${gate.toUpperCase()} sequence`);
+            quaCode.push(`# Period: ${period}ns, Duty: ${(duty * 100).toFixed(0)}%, Cycles: ${cycles}`);
+            quaCode.push(`# Phase step: ${phaseStep}° per cycle`);
+            quaCode.push('');
+            
+            for (let i = 0; i < cycles; i++) {
+                const phase = (phaseStep * i) % 360;
+                const cycleDesc = `Cycle ${i + 1}/${cycles} (phase: ${phase}°)`;
+                
+                sequence.push(`${cycleDesc}: ${gate.toUpperCase()} gate for ${onTime.toFixed(1)}ns`);
+                
+                if (gate.startsWith('r')) {
+                    quaCode.push(`play('${gate}', q[0], angle=${angle}*π, phase=${phase}deg)  # ${cycleDesc}`);
+                } else {
+                    quaCode.push(`play('${gate}', q[0], phase=${phase}deg)  # ${cycleDesc}`);
+                }
+                
+                if (offTime > 0) {
+                    quaCode.push(`wait(${Math.round(offTime)})  # Idle time`);
+                    sequence.push(`${cycleDesc}: Wait for ${offTime.toFixed(1)}ns`);
+                }
+            }
+            
+            document.getElementById('sequencePreview').innerHTML = sequence.map(s => `<div class="text-xs">${s}</div>`).join('');
+            document.getElementById('quaOutput').innerHTML = `<pre class="mono text-xs text-slate-300">${quaCode.join('\n')}</pre>`;
+            
+            // Generate waveform visualization
+            generateWaveformVisualization(period, duty, cycles, phaseStep);
+            
+            updateAnalysisResults(period, duty, cycles, phaseStep, gate, angle);
+        }
+
+        // Generate waveform visualization
+        function generateWaveformVisualization(period, duty, cycles, phaseStep) {
+            const timePoints = [];
+            const amplitude = [];
+            const phase = [];
+            
+            const samplesPerCycle = 100;
+            const totalSamples = cycles * samplesPerCycle;
+            
+            for (let i = 0; i < totalSamples; i++) {
+                const t = (i / totalSamples) * period * cycles;
+                const cycleIndex = Math.floor(i / samplesPerCycle);
+                const phaseOffset = (phaseStep * cycleIndex * Math.PI) / 180;
+                
+                timePoints.push(t);
+                
+                const inCycleTime = (i % samplesPerCycle) / samplesPerCycle;
+                const isActive = inCycleTime < duty;
+                
+                if (isActive) {
+                    amplitude.push(Math.sin(2 * Math.PI * inCycleTime / duty + phaseOffset));
+                    phase.push(phaseOffset);
+                } else {
+                    amplitude.push(0);
+                    phase.push(phaseOffset);
+                }
+            }
+            
+            const trace1 = {
+                x: timePoints,
+                y: amplitude,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Drive Amplitude',
+                line: { color: '#3b82f6', width: 2 }
+            };
+            
+            const trace2 = {
+                x: timePoints,
+                y: phase,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Phase Offset',
+                yaxis: 'y2',
+                line: { color: '#22c55e', width: 2 }
+            };
+            
+            const layout = {
+                title: {
+                    text: 'Floquet Drive Waveform',
+                    font: { color: '#e2e8f0', size: 16 }
+                },
+                xaxis: {
+                    title: 'Time (ns)',
+                    gridcolor: '#374151',
+                    color: '#94a3b8'
+                },
+                yaxis: {
+                    title: 'Amplitude',
+                    gridcolor: '#374151',
+                    color: '#94a3b8'
+                },
+                yaxis2: {
+                    title: 'Phase (rad)',
+                    overlaying: 'y',
+                    side: 'right',
+                    color: '#22c55e'
+                },
+                plot_bgcolor: 'transparent',
+                paper_bgcolor: 'transparent',
+                font: { color: '#e2e8f0' },
+                legend: {
+                    x: 0.02,
+                    y: 0.98,
+                    bgcolor: 'rgba(30, 41, 59, 0.8)',
+                    bordercolor: '#475569',
+                    borderwidth: 1
+                }
+            };
+            
+            Plotly.newPlot('waveformPlot', [trace1, trace2], layout, {responsive: true});
+        }
+
+        // Update analysis results
+        function updateAnalysisResults(period, duty, cycles, phaseStep, gate, angle) {
+            const onTime = period * duty;
+            const offTime = period - onTime;
+            const totalTime = period * cycles;
+            
+            const analysis = [
+                `<div><strong>Drive Characteristics:</strong></div>`,
+                `<div>• Fundamental frequency: ${(1000/period).toFixed(2)} GHz</div>`,
+                `<div>• Total sequence time: ${totalTime}ns</div>`,
+                `<div>• Active gate time: ${(onTime * cycles).toFixed(1)}ns (${(duty * 100).toFixed(0)}%)</div>`,
+                `<div>• Idle time: ${(offTime * cycles).toFixed(1)}ns (${((1-duty) * 100).toFixed(0)}%)</div>`,
+                `<div>• Phase increment: ${phaseStep}° per cycle</div>`,
+                `<div>• Total phase sweep: ${(phaseStep * cycles) % 360}°</div>`,
+                `<div class="mt-3"><strong>Physical Implementation:</strong></div>`,
+                `<div>• Gate type: ${gate.toUpperCase()}${gate.startsWith('r') ? ` (${angle}π)` : ''}</div>`,
+                `<div>• Coherence requirement: ~${totalTime * 2}ns (2× safety factor)</div>`,
+                `<div>• Control bandwidth: ${(2/duty).toFixed(1)} × fundamental</div>`
+            ];
+            
+            document.getElementById('analysisOutput').innerHTML = analysis.join('');
+        }
+
+        // Run Floquet simulation
+        function runFloquetSimulation() {
+            const period = parseInt(controls.period.value);
+            const duty = parseFloat(controls.duty.value);
+            const cycles = parseInt(controls.cycles.value);
+            const phaseStep = parseInt(controls.phase.value);
+            const gate = controls.gate.value;
+            
+            // Simulate quantum evolution under Floquet drive
+            const simulationResults = simulateQuantumEvolution(period, duty, cycles, phaseStep, gate);
+            
+            // Show results in a modal or dedicated section
+            showSimulationResults(simulationResults);
+        }
+
+        // Simulate quantum evolution
+        function simulateQuantumEvolution(period, duty, cycles, phaseStep, gate) {
+            const dt = period / 100; // Time step
+            const timePoints = [];
+            const population = [];
+            const coherence = [];
+            
+            let pop = 0; // Start in ground state
+            let coh = 1.0; // Full coherence
+            
+            for (let t = 0; t <= period * cycles; t += dt) {
+                const cycleIndex = Math.floor(t / period);
+                const inCycleTime = (t % period) / period;
+                const isActive = inCycleTime < duty;
+                
+                // Simulate Rabi oscillations during active periods
+                if (isActive) {
+                    const omega = 2 * Math.PI / (period * duty); // Rabi frequency
+                    const phase = (phaseStep * cycleIndex * Math.PI) / 180;
+                    pop = Math.sin(omega * inCycleTime * period + phase) ** 2;
+                    coh *= 0.999; // Slight decoherence during gates
+                } else {
+                    coh *= 0.9995; // Decoherence during idle
+                }
+                
+                timePoints.push(t);
+                population.push(pop);
+                coherence.push(coh);
+            }
+            
+            return {
+                timePoints,
+                population,
+                coherence,
+                finalPopulation: pop,
+                finalCoherence: coh,
+                fidelity: Math.sqrt(coh) // Simplified fidelity
+            };
+        }
+
+        // Show simulation results
+        function showSimulationResults(results) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-slate-800 rounded-lg p-6 max-w-2xl max-h-96 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold text-blue-400">Floquet Simulation Results</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div><strong>Final State:</strong></div>
+                        <div>• Population: ${results.finalPopulation.toFixed(4)}</div>
+                        <div>• Coherence: ${results.finalCoherence.toFixed(4)}</div>
+                        <div>• Fidelity: ${results.fidelity.toFixed(4)}</div>
+                        <div class="mt-3"><strong>Simulation Complete:</strong></div>
+                        <div>• Time points: ${results.timePoints.length}</div>
+                        <div>• Total evolution time: ${results.timePoints[results.timePoints.length-1]}ns</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Initialize
+        updateTimingAnalysis();
+    </script>
+</body>
+</html>
