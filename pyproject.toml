@@ -1,0 +1,6 @@
+squint/
+  __init__.py        # exposes __version__
+  cli.py             # holds main()
+  compiler.py        # your current logic from SQUINT.py
+  visualizer.py      # SQUINT_FloquetVisualizer.py
+  examples/          # .squint samples (included as package data)
