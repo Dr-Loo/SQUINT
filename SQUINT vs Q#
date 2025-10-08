@@ -1,0 +1,73 @@
+---
+
+Q# provides a robust foundation for quantum algorithm development with strong hardware-targeting capabilities. SQUINT builds upon this hardware-aware paradigm by introducing **physics-aware compilation** that bridges quantum logic, physical semantics, and thermodynamic diagnostics. Where Q# excels at gate-level abstraction and hardware calibration, SQUINT enables:
+
+- **Expressive physical semantics**: Direct specification of coherence constraints, field-dependent damping, topological braiding, and Floquet modulation via declarative overlays
+- **Novel compilation techniques**: Overlay-driven constraint enforcement and semantic-aware sequence expansion
+- **Multi-domain integration**: Unified treatment of quantum operations, semantic field evolution, and topological defect dynamics
+- **Deterministic reproducibility**: Bit-for-bit identical compilation artifacts with comprehensive timeline logging and simulation control
+
+SQUINT represents the next evolution: from hardware-aware programming to **physics-aware compilation**.
+
+---
+
+### Complementary Roles:
+
+**Q#**: Optimal for:
+- Quantum algorithm development
+- Gate-level programming
+- Error correction protocols
+- Hardware-agnostic algorithm design
+
+**SQUINT**: Essential for:
+- Experimental quantum control design
+- Physical constraint enforcement  
+- Multi-domain quantum system modeling
+- Reproducible experimental workflows
+- Floquet engineering and periodic control
+
+
+## **Use Case Comparison**
+
+| Scenario | Q# Approach | SQUINT Approach |
+|----------|-------------|-----------------|
+| **Floquet Engineering** | Manual pulse sequence construction | `floquet_period=100ns, cycles=10, duty=0.3` |
+| **Coherence-Aware Scheduling** | Explicit wait insertion | `coherence_len >= 150ns` (compiler-managed) |
+| **Topological Operations** | Algorithmic simulation | `braid = D` with defect graph tracking |
+| **Field-Dependent Control** | External parameter tables | `damping η(Φ=Phi)` (field-integrated) |
+| **Experimental Reproducibility** | Manual documentation | **Automatic timeline logging & input/output hashing** |
+
+---
+## **Comparative Analysis**
+
+| Aspect | Q# | SQUINT |
+|--------|----|---------|
+| **Primary Focus** | Quantum algorithms & gate-level programming | **Physics-aware compilation** & physical intent |
+| **Abstraction Level** | Logical gates, operations, functions | **Semantic fields, overlays, physical constraints** |
+| **Physical Constraints** | Limited hardware targeting & calibration | **Native overlay system**: coherence, path length, damping, Floquet |
+| **Domain Coverage** | Quantum computing (algorithms) | **Triple-aware**: Quantum + Semantic + Topological |
+| **Compilation Output** | QIR, machine-specific code | **QUA-like pulses + timeline JSON + simulation artifacts** |
+| **Reproducibility** | Standard compilation | **Deterministic**: input/output hashing, structured logging, seed control |
+| **Physical Semantics** | Basic timing & resonance | **Semantic fields (Φ), defect tracking, thermodynamic proxies** |
+| **Control Paradigm** | Gate sequencing | **Overlay-driven constraint enforcement & Floquet expansion** |
+| **Error Handling** | Quantum error correction | **Physical constraint validation & thermodynamic diagnostics** |
+| **Simulation** | Quantum state simulation | **Multi-domain**: field evolution, defect hysteresis, Floquet dynamics |
+| **Target Audience** | Algorithm developers, programmers | **Experimental physicists, quantum engineers, control designers** |
+| **Key Innovation** | Hardware-aware programming | **Physics-aware compilation** |
+
+---
+
+## **Detailed Feature Comparison**
+
+| Feature | Q# | SQUINT |
+|---------|----|---------|
+| **Coherence Management** | Manual timing control | `coherence_len >= 100ns` (automated) |
+| **Spatial Constraints** | Not natively supported | `path_len <= 2` (lattice validation) |
+| **Field Dependencies** | External calibration | `damping η(Φ=Phi)` (semantic field integration) |
+| **Periodic Control** | Manual sequence construction | `floquet_period, cycles, duty` (native expansion) |
+| **Topological Operations** | Algorithmic only | `braid = D` (defect handle tracking) |
+| **Artifact Generation** | Executable code | **Pulses + timeline + simulation data** |
+| **Reproducibility** | Standard compilation | **SHA-256 verification, deterministic outputs** |
+| **Physical Diagnostics** | Limited | **T_eff, phantom heat, hysteresis traces** |
+
+---
