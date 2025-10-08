@@ -33,3 +33,5 @@ floquet_kernel = FloquetKernel(
     modulation_function=lambda phase: math.sin(phase)
 )
 operations = floquet_kernel.evolve_cycle(n_cycles=50)
+
+![Reproducibility](https://github.com/Dr-Loo/SQUINT/actions/workflows/reproducibility.yml/badge.svg)
