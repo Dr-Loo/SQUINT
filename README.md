@@ -5,6 +5,7 @@
 ![MIT](https://img.shields.io/badge/License-MIT-green.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Status](https://img.shields.io/badge/status-v0.1.0-brightgreen)
+![Reproducibility](https://github.com/Dr-Loo/SQUINT/actions/workflows/reproducibility.yml/badge.svg)
 
 SQUINT represents a paradigm shift from traditional quantum compilation to **physical domain compilation**, enabling programmers to express algorithms in the natural language of their physical implementation while automatically handling cross-domain constraints.
 
@@ -33,5 +34,3 @@ floquet_kernel = FloquetKernel(
     modulation_function=lambda phase: math.sin(phase)
 )
 operations = floquet_kernel.evolve_cycle(n_cycles=50)
-
-![Reproducibility](https://github.com/Dr-Loo/SQUINT/actions/workflows/reproducibility.yml/badge.svg)
