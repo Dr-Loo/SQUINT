@@ -1,0 +1,83 @@
+name: reproducibility
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  repro:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install package (editable, with extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[visualizer]
+
+      - name: Sanity — show CLI
+        run: |
+          python -c "import importlib, squint; print('squint version:', getattr(squint, '__version__', 'dev'))"
+          python - <<'PY'
+          import sys, subprocess
+          try:
+              subprocess.run(["squint", "--help"], check=True)
+          except Exception as e:
+              print("squint --help failed:", e); sys.exit(1)
+          PY
+
+      - name: Reproducibility — examples recompile (hash match)
+        run: |
+          # Recompile all .squint files twice and compare hashes
+          squint test-reproducibility squint/examples/
+
+      - name: Build Docker image (pinned tag)
+        run: |
+          docker build -t drloo/squint:v0.1.0 .
+
+      - name: Cross-platform hash check (Docker vs host)
+        run: |
+          set -e
+          EX=squint/examples/floquet.squint
+          OUT_HOST=${EX%.squint}.host.qua.txt
+          OUT_DOCK=${EX%.squint}.dock.qua.txt
+
+          # Host compile
+          squint compile "$EX" --output "$OUT_HOST" --log --strict-overlays
+          HOST_HASH=$(python - <<'PY'
+          from squint.compiler import hash_qua_like
+          from pathlib import Path
+          print(hash_qua_like(Path("${OUT_HOST}")))
+          PY
+          )
+
+          # Docker compile
+          docker run --rm -v "$PWD":/src drloo/squint:v0.1.0 \
+            compile "/src/$EX" --output "/src/$OUT_DOCK" --log --strict-overlays
+
+          DOCK_HASH=$(python - <<'PY'
+          from squint.compiler import hash_qua_like
+          from pathlib import Path
+          print(hash_qua_like(Path("${OUT_DOCK}")))
+          PY
+          )
+
+          echo "Host hash : $HOST_HASH"
+          echo "Docker hash: $DOCK_HASH"
+          test "$HOST_HASH" = "$DOCK_HASH"
+
+      - name: Upload artifacts (QUA-like + logs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: squint-artifacts
+          path: |
+            squint/examples/*.qua.txt
+            squint/examples/*.log.json
+          if-no-files-found: warn
